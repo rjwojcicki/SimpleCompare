@@ -1,8 +1,10 @@
-from fman import DirectoryPaneCommand, show_alert
+from fman import DirectoryPaneCommand, show_alert, load_json, OK, CANCEL
 from fman.url import as_human_readable
 import subprocess
+from .settings import Settings
 
 savedToCompare = ""
+settings = Settings()
 
 class SaveToCompare(DirectoryPaneCommand):	
 	def __call__(self):
@@ -17,9 +19,10 @@ class SaveToCompare(DirectoryPaneCommand):
 
 class CompareWithSaved(DirectoryPaneCommand):
 	def __call__(self):
+
 		global savedToCompare
 		selectedFile = as_human_readable(self.get_chosen_files()[0])
-		subprocess.call([r"C:\Program Files\KDiff3\kdiff3.exe", savedToCompare, selectedFile])
+		subprocess.call([settings.get_comparison_tool(), savedToCompare, selectedFile])
 		pass
 
 	def is_visible(self):
@@ -32,9 +35,8 @@ class CompareFiles(DirectoryPaneCommand):
 		global savedToCompare
 		selectedFile1 = as_human_readable(self.get_chosen_files()[0])
 		selectedFile2 = as_human_readable(self.get_chosen_files()[1])
-		subprocess.call([r"C:\Program Files\KDiff3\kdiff3.exe", selectedFile1, selectedFile2])
+		subprocess.call([settings.get_comparison_tool(), selectedFile1, selectedFile2])
 		pass
 
 	def is_visible(self):
 		return len(self.get_chosen_files()) == 2
-
