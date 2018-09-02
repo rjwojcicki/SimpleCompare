@@ -11,9 +11,7 @@ settings = Settings()
 class SaveToCompare(DirectoryPaneCommand):
     def __call__(self):
         global savedToCompare
-        files = self.get_chosen_files()
-        selectedFile = files[0]
-        savedToCompare = as_human_readable(selectedFile)
+        savedToCompare = self.get_chosen_files()[0]
 
     def is_visible(self):
         files = self.get_chosen_files()
@@ -23,7 +21,7 @@ class SaveToCompare(DirectoryPaneCommand):
 class CompareWithSaved(DirectoryPaneCommand):
     def __call__(self):
         global savedToCompare
-        selectedFile = as_human_readable(self.get_chosen_files()[0])
+        selectedFile = self.get_chosen_files()[0]
         ComparisonToolRunner.compare_files(savedToCompare, selectedFile)
         pass
 
@@ -33,8 +31,8 @@ class CompareWithSaved(DirectoryPaneCommand):
 
 class CompareFiles(DirectoryPaneCommand):
     def __call__(self):
-        selectedFile1 = as_human_readable(self.get_chosen_files()[0])
-        selectedFile2 = as_human_readable(self.get_chosen_files()[1])
+        selectedFile1 = self.get_chosen_files()[0]
+        selectedFile2 = self.get_chosen_files()[1]
         ComparisonToolRunner.compare_files(selectedFile1, selectedFile2)
         pass
 
@@ -47,7 +45,7 @@ class ComparisonToolRunner:
         global settings
         comparisonTool = settings.get_comparison_tool()
         if comparisonTool:
-            subprocess.call([comparisonTool, lhsFile, rhsFile])
+            subprocess.call([comparisonTool, as_human_readable(lhsFile), as_human_readable(rhsFile)])
 
 def _ifnull(var, val):
   if var is None:

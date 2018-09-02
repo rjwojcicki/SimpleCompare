@@ -8,41 +8,53 @@ import sys
 import json
 
 _COMPAISON_TOOL_KEY = "comparisonTool"
-_SETTINGS_FILE = "Comparison Settings.json"
+_SETTINGS_FILE = "Simple Compare Settings.json"
+_PLATFORM_APPLICATIONS_FILTER = {
+    'Mac': 'Applications (*.app)',
+    'Windows': 'Applications (*.exe)',
+    'Linux': 'Applications (*)'
+}
 
 class Settings:
-    settings = {}
-    _PLATFORM_APPLICATIONS_FILTER = {
-        'Mac': 'Applications (*.app)',
-        'Windows': 'Applications (*.exe)',
-        'Linux': 'Applications (*)'
-    }
-
     def get_comparison_tool(self):
-        self._ensure_comparison_tool_is_chosen()
-        return self._get_comparison_tool()
+        tool = self._load_comparison_tool()
+        if tool:
+            return tool
+        tool = self._ask_for_comaparison_tool()
+        if not tool:
+            return None
+        self._save_comparison_tool(tool)
+        return tool
 
-    def _ensure_comparison_tool_is_chosen(self):
-        self.settings = load_json(_SETTINGS_FILE, default={})
-        if not self._get_comparison_tool():
-            self._ask_for_comaparison_tool()
+    def _load_comparison_tool(self) -> str:
+        settings = load_json(_SETTINGS_FILE, default={})
+        return settings.get(_COMPAISON_TOOL_KEY, None)
+
+    def _save_comparison_tool(self, tool_path: str):
+        save_json(_SETTINGS_FILE, {_COMPAISON_TOOL_KEY: tool_path})
 
     def _ask_for_comaparison_tool(self):
+        can_configure = self._can_configure_now()
+        if not (can_configure):
+            return None
+        return self._pick_comparison_tool()
+
+    def _can_configure_now(self) -> bool:
         choice = show_alert(
             """Comparison tool is currently not configured. Please pick one.
-            Use tools like KDiff3, DiffMerge, Beyond Compare, etc""",
+Use tools like KDiff3, DiffMerge, Beyond Compare, etc""",
             OK | CANCEL, OK
         )
-        if choice & OK:
-            viewer_path = show_file_open_dialog(
-                'Pick a comparison tool', self._get_applications_directory(),
-                self._PLATFORM_APPLICATIONS_FILTER[PLATFORM]
-            )   
-            if viewer_path:
-                self.settings[_COMPAISON_TOOL_KEY] = viewer_path
-                save_json(_SETTINGS_FILE, self.settings)    
+        return choice & OK
 
-    def _get_applications_directory(self):
+    def _pick_comparison_tool(self) -> str:
+        tool_path = show_file_open_dialog(
+            'Pick a comparison tool', self._get_applications_directory(),
+            _PLATFORM_APPLICATIONS_FILTER[PLATFORM]
+        )
+        return tool_path
+
+    def _get_applications_directory(self) -> str:
         if PLATFORM == 'Mac':
             return '/Applications'
         elif PLATFORM == 'Windows':
@@ -54,7 +66,5 @@ class Settings:
             return result
         elif PLATFORM == 'Linux':
             return '/usr/bin'
-        raise NotImplementedError(PLATFORM)
-    
-    def _get_comparison_tool(self):
-        return self.settings.get(_COMPAISON_TOOL_KEY, None)
+        raise RuntimeError("Not supported platform: '" + PLATFORM + \
+            "'. Supported platforms are 'Mac', 'Windows' and 'Linux'")
