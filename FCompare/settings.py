@@ -20,13 +20,14 @@ class Settings:
 
     def get_comparison_tool(self):
         self._ensure_comparison_tool_is_chosen()
-        return self.settings.get(_COMPAISON_TOOL_KEY, None)
+        return self._get_comparison_tool()
 
     def _ensure_comparison_tool_is_chosen(self):
         self.settings = load_json(_SETTINGS_FILE, default={})
-        comparisonTool = self.settings.get(_COMPAISON_TOOL_KEY, None)
-        if not comparisonTool:
+        if not self._get_comparison_tool():
             self._ask_for_comaparison_tool()
+        if self._get_comparison_tool():
+            self._ask_for_command_line_options()
 
     def _ask_for_comaparison_tool(self):
         choice = show_alert(
@@ -39,7 +40,6 @@ class Settings:
                 self._PLATFORM_APPLICATIONS_FILTER[PLATFORM]
             )   
             if viewer_path:
-                # viewer = get_popen_kwargs_for_opening('{file}', viewer_path)
                 self.settings[_COMPAISON_TOOL_KEY] = viewer_path
                 save_json(_SETTINGS_FILE, self.settings)    
 
@@ -48,7 +48,7 @@ class Settings:
             return '/Applications'
         elif PLATFORM == 'Windows':
             result = os.environ["ProgramW6432"]
-            if not result:
+            if not result or not exists(result):
                 result = os.environ["ProgramFiles"]
             if not exists(result):
                 result = splitdrive(sys.executable)[0] + '\\'
@@ -56,3 +56,9 @@ class Settings:
         elif PLATFORM == 'Linux':
             return '/usr/bin'
         raise NotImplementedError(PLATFORM)
+
+    def _ask_for_command_line_options(self):
+        
+    
+    def self._get_comparison_tool(self):
+        return self.settings.get(_COMPAISON_TOOL_KEY, None)
