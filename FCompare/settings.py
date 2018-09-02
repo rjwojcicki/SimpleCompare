@@ -26,12 +26,11 @@ class Settings:
         self.settings = load_json(_SETTINGS_FILE, default={})
         if not self._get_comparison_tool():
             self._ask_for_comaparison_tool()
-        if self._get_comparison_tool():
-            self._ask_for_command_line_options()
 
     def _ask_for_comaparison_tool(self):
         choice = show_alert(
-            'Comparison tool is currently not configured. Please pick one.',
+            """Comparison tool is currently not configured. Please pick one.
+            Use tools like KDiff3, DiffMerge, Beyond Compare, etc""",
             OK | CANCEL, OK
         )
         if choice & OK:
@@ -56,9 +55,6 @@ class Settings:
         elif PLATFORM == 'Linux':
             return '/usr/bin'
         raise NotImplementedError(PLATFORM)
-
-    def _ask_for_command_line_options(self):
-        
     
-    def self._get_comparison_tool(self):
+    def _get_comparison_tool(self):
         return self.settings.get(_COMPAISON_TOOL_KEY, None)
