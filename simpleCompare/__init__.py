@@ -1,4 +1,4 @@
-from fman import DirectoryPaneCommand, show_alert, load_json, OK, CANCEL, DirectoryPane
+from fman import DirectoryPaneCommand, show_alert, load_json, OK, CANCEL, DirectoryPane, PLATFORM
 from fman.url import as_human_readable
 import subprocess
 from .settings import Settings
@@ -45,7 +45,13 @@ class ComparisonToolRunner:
         global settings
         comparisonTool = settings.get_comparison_tool()
         if comparisonTool:
-            subprocess.call([comparisonTool, as_human_readable(lhsFile), as_human_readable(rhsFile)])
+            subprocess.call(ComparisonToolRunner.get_args(comparisonTool, lhsFile, rhsFile))
+
+    @staticmethod
+    def get_args(comparisonTool, lhsFile, rhsFile):
+        if PLATFORM == 'Mac':
+            return ['/usr/bin/open', '-a', comparisonTool, '--args', as_human_readable(lhsFile), as_human_readable(rhsFile)]
+        return [comparisonTool, as_human_readable(lhsFile), as_human_readable(rhsFile)]
 
 def _ifnull(var, val):
   if var is None:
